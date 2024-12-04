@@ -1,0 +1,410 @@
+openapi: 3.0.3
+info:
+  title: École Molière School Management System - Academic API
+  description: API documentation for academic management endpoints
+  version: 1.0.0
+  contact:
+    name: ABNSOFT
+    email: contact@abnsoft.com
+    url: https://www.abnsoft.com
+
+servers:
+  - url: http://localhost:8080/api
+    description: Development server
+  - url: https://api.ecole-moliere.com/api
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /teachers:
+    get:
+      summary: Get all teachers
+      description: Retrieve a paginated list of teachers
+      operationId: getAllTeachers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherPage'
+    post:
+      summary: Create a new teacher
+      description: Add a new teacher to the system
+      operationId: createTeacher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherDTO'
+      responses:
+        '201':
+          description: Teacher created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teacher'
+
+  /teachers/{id}:
+    get:
+      summary: Get teacher by ID
+      description: Retrieve a specific teacher by their ID
+      operationId: getTeacherById
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teacher'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update teacher
+      description: Update an existing teacher's information
+      operationId: updateTeacher
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherDTO'
+      responses:
+        '200':
+          description: Teacher updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teacher'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete teacher
+      description: Delete a teacher from the system
+      operationId: deleteTeacher
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Teacher deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teachers/{id}/photo:
+    post:
+      summary: Upload teacher photo
+      description: Upload a photo for a specific teacher
+      operationId: uploadTeacherPhoto
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Photo uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoResponse'
+
+  /students:
+    get:
+      summary: Get all students
+      description: Retrieve a paginated list of students
+      operationId: getAllStudents
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentPage'
+    post:
+      summary: Create a new student
+      description: Add a new student to the system
+      operationId: createStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentDTO'
+      responses:
+        '201':
+          description: Student created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    PageParam:
+      name: page
+      in: query
+      description: Page number (0-based)
+      schema:
+        type: integer
+        default: 0
+    SizeParam:
+      name: size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        default: 20
+    SortParam:
+      name: sort
+      in: query
+      description: Sorting criteria (e.g., firstName,asc)
+      schema:
+        type: string
+
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    Teacher:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        employeeId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        specialization:
+          type: string
+        dateOfJoining:
+          type: string
+          format: date
+        isActive:
+          type: boolean
+        isClassTeacher:
+          type: boolean
+        assignedClassId:
+          type: integer
+          format: int64
+        photoUrl:
+          type: string
+        subjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subject'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TeacherDTO:
+      type: object
+      required:
+        - employeeId
+        - firstName
+        - lastName
+        - email
+        - specialization
+        - dateOfJoining
+      properties:
+        employeeId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        specialization:
+          type: string
+        dateOfJoining:
+          type: string
+          format: date
+        isClassTeacher:
+          type: boolean
+        assignedClassId:
+          type: integer
+          format: int64
+        subjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subject'
+
+    Student:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        studentId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+        classId:
+          type: integer
+          format: int64
+        photoUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    StudentDTO:
+      type: object
+      required:
+        - studentId
+        - firstName
+        - lastName
+        - email
+        - dateOfBirth
+        - gender
+        - classId
+      properties:
+        studentId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+        classId:
+          type: integer
+          format: int64
+
+    Subject:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+
+    TeacherPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Teacher'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+
+    StudentPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Student'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+
+    PhotoResponse:
+      type: object
+      properties:
+        photoUrl:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string

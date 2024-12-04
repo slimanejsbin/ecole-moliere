@@ -1,0 +1,203 @@
+openapi: 3.0.3
+info:
+  title: École Molière School Management System - Authentication API
+  description: API endpoints for authentication and user management
+  version: 1.0.0
+  contact:
+    name: ABNSOFT
+    email: contact@abnsoft.com
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+  - url: https://api.ecolemoliere.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: Authentication endpoints
+
+paths:
+  /auth/signin:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate a user and return a JWT token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '200':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtResponse'
+        '400':
+          description: Invalid request or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/signout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Invalidate the current user's session
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: teacher@ecolemoliere.com
+        password:
+          type: string
+          format: password
+          example: password123
+
+    SignupRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: John
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: john.doe@ecolemoliere.com
+        password:
+          type: string
+          format: password
+          minLength: 6
+          example: password123
+
+    JwtResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        email:
+          type: string
+          format: email
+          example: john.doe@ecolemoliere.com
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["ROLE_TEACHER"]
+        permissions:
+          type: array
+          items:
+            type: string
+          example: ["STUDENT_READ", "TEACHER_READ"]
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Invalid credentials
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+          example: 401
+        path:
+          type: string
+          example: /api/auth/signin
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

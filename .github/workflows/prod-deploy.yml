@@ -1,0 +1,85 @@
+name: Production Deployment
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: ecole-moliere
+  ECS_CLUSTER: ecole-moliere-prod
+  ECS_SERVICE_BACKEND: backend
+  ECS_SERVICE_FRONTEND: frontend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Build backend
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}/backend:${{ env.VERSION }} ./backend
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}/backend:${{ env.VERSION }}
+
+      - name: Build frontend
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}/frontend:${{ env.VERSION }} ./frontend
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}/frontend:${{ env.VERSION }}
+
+      - name: Download deploy scripts
+        run: |
+          chmod +x ./scripts/deploy.sh
+          chmod +x ./scripts/monitor.sh
+
+      - name: Deploy to production
+        run: |
+          ./scripts/deploy.sh production ${{ env.VERSION }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+
+      - name: Start monitoring
+        run: |
+          ./scripts/monitor.sh production &
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+
+      - name: Update deployment status
+        if: always()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment-url: https://app.ecole-moliere.com
+          state: ${{ job.status }}
+          deployment-id: ${{ github.event.deployment.id }}
+
+      - name: Notify deployment status
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+          SLACK_TITLE: Production Deployment ${{ job.status }}
+          SLACK_MESSAGE: 'Version ${{ env.VERSION }} deployment to production ${{ job.status }}'

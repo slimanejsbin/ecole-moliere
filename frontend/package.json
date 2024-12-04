@@ -1,0 +1,67 @@
+{
+  "name": "school-management-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/lab": "^5.0.0-alpha.130",
+    "@mui/material": "^5.13.1",
+    "@mui/x-data-grid": "^6.4.0",
+    "@reduxjs/toolkit": "^1.9.5",
+    "@tanstack/react-query": "^4.29.7",
+    "axios": "^1.4.0",
+    "date-fns": "^2.30.0",
+    "formik": "^2.2.9",
+    "i18next": "^22.4.15",
+    "jwt-decode": "^3.1.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^12.2.2",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.11.2",
+    "recharts": "^2.6.2",
+    "yup": "^1.1.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.4.3",
+    "@types/jest": "^29.5.1",
+    "@types/node": "^20.2.1",
+    "@types/react": "^18.2.6",
+    "@types/react-dom": "^18.2.4",
+    "@typescript-eslint/eslint-plugin": "^5.59.6",
+    "@typescript-eslint/parser": "^5.59.6",
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^8.40.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^29.7.0",
+    "prettier": "^2.8.8",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.8",
+    "vitest": "^0.31.1"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

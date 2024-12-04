@@ -1,0 +1,19 @@
+{
+  "name": "ecole-moliere-deployment-tests",
+  "version": "1.0.0",
+  "description": "Tests de déploiement pour École Molière",
+  "scripts": {
+    "test:infra": "jest infrastructure.test.ts",
+    "test:load": "k6 run load.test.ts",
+    "test:all": "npm run test:infra && npm run test:load"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sdk": "^3.x",
+    "@types/jest": "^29.x",
+    "axios": "^1.x",
+    "jest": "^29.x",
+    "k6": "^0.x",
+    "ts-jest": "^29.x",
+    "typescript": "^5.x"
+  }
+}
